@@ -1,5 +1,6 @@
-use actix_web::{HttpResponse, Error, web, App, HttpServer, Responder, Result};
+use actix_web::{http::header::ContentType, HttpResponse, Error, web, App, HttpServer, Result};
 use sqlx::PgPool;
+use serde_json;
 
 #[derive(serde::Serialize, sqlx::FromRow)]
 pub struct User {
@@ -35,9 +36,11 @@ async fn get_user_by_id(pool: web::Data<PgPool>, id: web::Path<i32>) -> Result<H
     let user = get_user_by_id_db(&pool, id.into_inner())
         .await;
 
+    let j = serde_json::to_string(&user)?;
+
     Ok(HttpResponse::Ok()
-        .content_type("text/html")
-        .body(user.name))
+        .content_type(ContentType::json())
+        .body(j))
 }
 
 pub async fn get_user_by_id_db(pool: &PgPool, id: i32) -> User {
