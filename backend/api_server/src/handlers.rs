@@ -1,10 +1,10 @@
-use actix_web::{http::header::ContentType, HttpResponse, Error, web, App, HttpServer, Result};
+use actix_web::{http::header::ContentType, HttpResponse, Error, web, App, HttpServer, Result, Responder};
 use sqlx::PgPool;
 use sqlx::postgres::PgQueryResult;
 use serde_json;
 
 
-#[derive(serde::Serialize, sqlx::FromRow)]
+#[derive(Debug, serde::Serialize, sqlx::FromRow)]
 pub struct User {
     id: i32,
     name: String, 
@@ -14,7 +14,7 @@ pub struct User {
 }
 
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct InputUser {
     name: String, 
     age: i32,
@@ -23,44 +23,40 @@ pub struct InputUser {
 }
 
 
-pub async fn get_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> Result<HttpResponse, Error> {
+pub async fn get_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Responder {
 
     let user = get_user_db(&pool, id.into_inner()).await;
 
-    let j = serde_json::to_string(&user)?;
-
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(j))
+    match user {
+        Err(_) => HttpResponse::NotFound().finish(),
+        Ok(user) => HttpResponse::Ok().json(&user),
+    }
 }
 
 
-async fn get_user_db(pool: &PgPool, id: i32) -> User {
+async fn get_user_db(pool: &PgPool, id: i32) -> Result<User, sqlx::Error> {
     sqlx::query_as("SELECT * FROM users WHERE id = $1")
         .bind(id)
         .fetch_one(pool)
         .await
-        .unwrap()
 }
 
 
-pub async fn get_users(pool: web::Data<PgPool>) -> Result<HttpResponse, Error> {
+pub async fn get_users(pool: web::Data<PgPool>) -> impl Responder {
 
     let users = get_users_db(&pool).await;
 
-    let j = serde_json::to_string(&users)?;
-
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(j))
+    match users {
+        Err(_) => HttpResponse::NotFound().finish(),
+        Ok(users) => HttpResponse::Ok().json(&users),
+    }
 }
 
 
-async fn get_users_db(pool: &PgPool) -> Vec<User> {
+async fn get_users_db(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
     sqlx::query_as("SELECT * FROM users ORDER BY id")
         .fetch_all(pool)
         .await
-        .unwrap()
 }
 
 
