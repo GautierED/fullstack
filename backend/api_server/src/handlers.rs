@@ -60,13 +60,14 @@ async fn get_users_db(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
 }
 
 
-pub async fn add_user(pool: web::Data<PgPool>, user: web::Json<InputUser>) -> Result<HttpResponse, Error> {
+pub async fn add_user(pool: web::Data<PgPool>, user: web::Json<InputUser>) -> impl Responder {
     
-    add_user_db(&pool, user).await;
+    let insert = add_user_db(&pool, user).await;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::plaintext())
-        .body("user added"))
+    match insert {
+        Err(_) => HttpResponse::BadRequest().finish(),
+        Ok(insert) => HttpResponse::Ok().finish(),
+    }
 }
 
 
@@ -90,13 +91,14 @@ async fn add_user_db(pool: &PgPool, user: web::Json<InputUser>) -> Result<PgQuer
 }
 
 
-pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> Result<HttpResponse, Error> {
+pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Responder {
 
-    delete_user_db(&pool, id.into_inner()).await;
+    let delete = delete_user_db(&pool, id.into_inner()).await;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::plaintext())
-        .body("user deleted"))
+    match delete {
+        Err(_) => HttpResponse::BadRequest().finish(),
+        Ok(delete) => HttpResponse::Ok().finish(),
+    }
 }
 
 
