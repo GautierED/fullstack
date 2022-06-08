@@ -1,9 +1,9 @@
-use actix_web::{http::header::ContentType, HttpResponse, Error, web, App, HttpServer, Result};
+use actix_web::{web, App, HttpServer, Result};
 use sqlx::PgPool;
-use sqlx::postgres::PgQueryResult;
-use serde_json;
+
 
 mod handlers;
+
 
 #[actix_web::main]
 async fn main() -> Result<(), sqlx::Error> {
@@ -23,7 +23,7 @@ async fn main() -> Result<(), sqlx::Error> {
         })
         .bind("127.0.0.1:8080")?
         .run()
-        .await;
+        .await?;
 
     Ok(())
 }

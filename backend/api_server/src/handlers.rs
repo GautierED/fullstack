@@ -1,7 +1,6 @@
-use actix_web::{http::header::ContentType, HttpResponse, Error, web, App, HttpServer, Result, Responder};
+use actix_web::{HttpResponse, web, Result, Responder};
 use sqlx::PgPool;
 use sqlx::postgres::PgQueryResult;
-use serde_json;
 
 
 #[derive(Debug, serde::Serialize, sqlx::FromRow)]
@@ -66,7 +65,7 @@ pub async fn add_user(pool: web::Data<PgPool>, user: web::Json<InputUser>) -> im
 
     match insert {
         Err(_) => HttpResponse::BadRequest().finish(),
-        Ok(insert) => HttpResponse::Ok().finish(),
+        Ok(_insert) => HttpResponse::Ok().finish(),
     }
 }
 
@@ -97,7 +96,7 @@ pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Re
 
     match delete {
         Err(_) => HttpResponse::BadRequest().finish(),
-        Ok(delete) => HttpResponse::Ok().finish(),
+        Ok(_delete) => HttpResponse::Ok().finish(),
     }
 }
 
