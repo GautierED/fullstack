@@ -4,6 +4,7 @@ use sqlx::postgres::PgQueryResult;
 
 
 use crate::models::*;
+use crate::security;
 
 
 pub async fn get_user_db(pool: &PgPool, id: &i32) -> Result<User, sqlx::Error> {
@@ -25,7 +26,7 @@ pub async fn get_users_db(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
 
 pub async fn add_user_db(pool: &PgPool, user: &web::Json<InputUser>) -> Result<PgQueryResult, sqlx::Error> {
 
-    let salt = String::from("salt");
+    let salt = security::get_salt();
 
     sqlx::query("INSERT INTO users (email, password, salt) VALUES ($1, $2, $3)")
         .bind(user.email.clone())

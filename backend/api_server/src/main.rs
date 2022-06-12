@@ -4,6 +4,7 @@ use sqlx::PgPool;
 mod handlers;
 mod models;
 mod database;
+mod security;
 
 #[actix_web::main]
 async fn main() -> Result<(), sqlx::Error> {
