@@ -27,10 +27,11 @@ pub async fn get_users_db(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
 pub async fn add_user_db(pool: &PgPool, user: &web::Json<InputUser>) -> Result<PgQueryResult, sqlx::Error> {
 
     let salt = security::get_salt();
+    let hash = security::get_hashed_password(&user.password, &salt);
 
     sqlx::query("INSERT INTO users (email, password, salt) VALUES ($1, $2, $3)")
         .bind(user.email.clone())
-        .bind(user.password.clone())
+        .bind(hash)
         .bind(salt)
         .execute(pool)
         .await

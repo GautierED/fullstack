@@ -1,4 +1,5 @@
-use scrypt::{password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString}, Scrypt};
+use scrypt::password_hash::{rand_core::OsRng, SaltString};
+use pwhash::bcrypt;
 
 
 pub fn get_salt() -> String {
@@ -7,12 +8,16 @@ pub fn get_salt() -> String {
     salt.to_string()
 }
 
-pub fn get_hashed_password(password: &str, salt: &str) -> String {
-    
-    let password_hash = Scrypt
-        .hash_password(password.as_bytes(), salt)
-        .unwrap()
-        .to_string();
 
-    password_hash
+pub fn get_hashed_password(password: &str, salt: &str) -> String { 
+    let c = format!("{} {}", password.to_string(), salt.to_string());
+    let h = bcrypt::hash(c).unwrap();
+    return h
+}
+
+
+pub fn verify_password(password: &str, hashed_password: &str, salt: &str) -> bool {
+    let c = format!("{} {}", password.to_string(), salt.to_string());
+    let b = bcrypt::verify(c, hashed_password);
+    return b
 }
