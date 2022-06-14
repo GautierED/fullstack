@@ -9,12 +9,9 @@ mod security;
 #[actix_web::main]
 async fn main() -> Result<(), sqlx::Error> {
     dotenv::dotenv().ok();
-
     let port = std::env::var("port").expect("PORT must be set");
-
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await?;
-    
     println!("Starting server, listening to {}", &port);
 
     HttpServer::new(move || {
