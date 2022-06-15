@@ -56,13 +56,13 @@ pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Re
 }
 
 
-pub async fn login(pool: web::Data<PgPool>, user: web::Json<InputUser>) -> impl Responder {
-    let query = database::get_user_by_email_db(&pool, &user.email).await;
+pub async fn login(pool: web::Data<PgPool>, form: web::Json<LoginForm>) -> impl Responder {
+    let user = database::get_user_by_email_db(&pool, &form.email).await;
 
-    match query {
-        Err(_) => HttpResponse::Unauthorized().finish(),
-        Ok(_query) => {
-            let is_same_password = security::verify_password(&user.password, &_query.password);
+    match user {
+        Err(_) => HttpResponse::NotFound().finish(),
+        Ok(_user) => {
+            let is_same_password = security::verify_password(&form.password, &_user.password);
 
             if is_same_password {
                 return HttpResponse::Ok().finish();
