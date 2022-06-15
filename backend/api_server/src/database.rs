@@ -7,9 +7,17 @@ use crate::models::*;
 use crate::security;
 
 
-pub async fn get_user_db(pool: &PgPool, id: &i32) -> Result<User, sqlx::Error> {
+pub async fn get_user_by_id_db(pool: &PgPool, id: &i32) -> Result<User, sqlx::Error> {
     sqlx::query_as("SELECT * FROM users WHERE id = $1")
         .bind(id)
+        .fetch_one(pool)
+        .await
+}
+
+
+pub async fn get_user_by_email_db(pool: &PgPool, email: &String) -> Result<User, sqlx::Error> {
+    sqlx::query_as("SELECT * FROM users WHERE email = $1")
+        .bind(email)
         .fetch_one(pool)
         .await
 }

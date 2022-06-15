@@ -4,6 +4,7 @@ use sqlx::PgPool;
 
 use crate::models::*;
 use crate::database;
+use crate::security;
 
 
 pub fn init(cfg: &mut web::ServiceConfig) {
@@ -11,11 +12,12 @@ pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.route("/users", web::get().to(get_users));
     cfg.route("/user", web::post().to(add_user));
     cfg.route("/user/{id}", web::delete().to(delete_user));
+    cfg.route("/login", web::post().to(login));
 }
 
 
 pub async fn get_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Responder {
-    let user = database::get_user_db(&pool, &id.into_inner()).await;
+    let user = database::get_user_by_id_db(&pool, &id.into_inner()).await;
 
     match user {
         Err(_) => HttpResponse::NotFound().finish(),
@@ -50,5 +52,24 @@ pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Re
     match delete {
         Err(_) => HttpResponse::NotFound().finish(),
         Ok(_delete) =>  HttpResponse::Ok().finish(),
+    }
+}
+
+
+pub async fn login(pool: web::Data<PgPool>, user: web::Json<InputUser>) -> impl Responder {
+    let query = database::get_user_by_email_db(&pool, &user.email).await;
+
+    match query {
+        Err(_) => HttpResponse::Unauthorized().finish(),
+        Ok(_query) => {
+            let is_same_password = security::verify_password(&user.password, &_query.password);
+
+            if is_same_password {
+                return HttpResponse::Ok().finish();
+            }
+            else {
+                return HttpResponse::Unauthorized().finish();
+            }
+        }
     }
 }
