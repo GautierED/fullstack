@@ -56,7 +56,7 @@ pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Re
 }
 
 
-pub async fn login(pool: web::Data<PgPool>, form: web::Json<LoginForm>) -> impl Responder {
+pub async fn login(pool: web::Data<PgPool>, form: web::Json<LoginUser>) -> impl Responder {
     let user = database::get_user_by_email_db(&pool, &form.email).await;
 
     match user {
@@ -65,6 +65,7 @@ pub async fn login(pool: web::Data<PgPool>, form: web::Json<LoginForm>) -> impl 
             let is_same_password = security::verify_password(&form.password, &_user.password);
 
             if is_same_password {
+                let token = security::get_jwt();
                 return HttpResponse::Ok().finish();
             }
             else {

@@ -14,7 +14,15 @@ pub struct InputUser {
 
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct LoginForm {
+pub struct LoginUser {
     pub email: String, 
     pub password: String
+}
+
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct Payload {
+    pub sub: String,
+    pub role: String,
+    pub exp: usize
 }
