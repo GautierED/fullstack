@@ -1,5 +1,5 @@
 use pwhash::bcrypt;
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::{encode, decode, Algorithm, EncodingKey, DecodingKey, Header, Validation};
 use chrono::{Duration, Utc};
 
 
@@ -25,20 +25,29 @@ pub fn get_jwt() -> String {
         .expect("invalid timestamp")
         .timestamp();
 
-    let p = Payload {
+    let c = Claims {
         sub: String::from("test"),
         role: String::from("admin"),
         exp: expiration_time as usize,
     };
 
-    let token = match encode(
-        &Header::default(),
-        &p,
-        &EncodingKey::from_secret(&secret),
-    ) {
+    let token = match encode(&Header::default(), &c, &EncodingKey::from_secret(&secret)) {
         Ok(t) => t,
         Err(_) => panic!(),
     };
 
     token
+}
+
+
+pub fn verify_jwt(token: &str) -> bool {
+    let secret = std::env::var("JWT_SECRET").unwrap().into_bytes();
+    let _is_jwt_valid = match decode::<Claims>(&token, &DecodingKey::from_secret(&secret), &Validation::new(Algorithm::HS256)) {
+        Ok(_is_jwt_valid) => {
+            return true
+        }
+        Err(_) => {
+            return false
+        }
+    };
 }

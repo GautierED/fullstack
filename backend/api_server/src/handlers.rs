@@ -1,4 +1,5 @@
 use actix_web::{HttpResponse, web, Responder};
+use actix_web_httpauth::extractors::bearer::BearerAuth;
 use sqlx::PgPool;
 
 
@@ -16,7 +17,11 @@ pub fn init(cfg: &mut web::ServiceConfig) {
 }
 
 
-pub async fn get_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Responder {
+pub async fn get_user(pool: web::Data<PgPool>, id: web::Path<i32>, auth: BearerAuth) -> impl Responder {
+    if !security::verify_jwt(&auth.token()){
+        return HttpResponse::Unauthorized().finish();
+    }
+
     let user = database::get_user_by_id_db(&pool, &id.into_inner()).await;
 
     match user {
@@ -26,7 +31,11 @@ pub async fn get_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Respo
 }
 
 
-pub async fn get_users(pool: web::Data<PgPool>) -> impl Responder {
+pub async fn get_users(pool: web::Data<PgPool>, auth: BearerAuth) -> impl Responder {
+    if !security::verify_jwt(&auth.token()){
+        return HttpResponse::Unauthorized().finish();
+    }
+
     let users = database::get_users_db(&pool).await;
 
     match users {
@@ -36,7 +45,11 @@ pub async fn get_users(pool: web::Data<PgPool>) -> impl Responder {
 }
 
 
-pub async fn add_user(pool: web::Data<PgPool>, user: web::Json<InputUser>) -> impl Responder {
+pub async fn add_user(pool: web::Data<PgPool>, user: web::Json<InputUser>, auth: BearerAuth) -> impl Responder {
+    if !security::verify_jwt(&auth.token()){
+        return HttpResponse::Unauthorized().finish();
+    }
+
     let insert = database::add_user_db(&pool, &user).await;
 
     match insert {
@@ -46,7 +59,11 @@ pub async fn add_user(pool: web::Data<PgPool>, user: web::Json<InputUser>) -> im
 }
 
 
-pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Responder {
+pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>, auth: BearerAuth) -> impl Responder {
+    if !security::verify_jwt(&auth.token()){
+        return HttpResponse::Unauthorized().finish();
+    }
+
     let delete = database::delete_user_db(&pool, &id.into_inner()).await;
 
     match delete {
@@ -66,7 +83,7 @@ pub async fn login(pool: web::Data<PgPool>, form: web::Json<LoginUser>) -> impl 
 
             if is_same_password {
                 let token = security::get_jwt();
-                return HttpResponse::Ok().finish();
+                return HttpResponse::Ok().json(&token);
             }
             else {
                 return HttpResponse::Unauthorized().finish();

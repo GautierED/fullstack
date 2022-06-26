@@ -14,3 +14,4 @@ sqlx = { version = "0.5", features = [ "runtime-actix-native-tls" , "postgres" ]
 pwhash = "1"
 jsonwebtoken = "8.0.1"
 chrono = "0.4"
+actix-web-httpauth = "0.6.0"

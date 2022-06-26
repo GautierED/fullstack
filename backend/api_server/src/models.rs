@@ -21,7 +21,7 @@ pub struct LoginUser {
 
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct Payload {
+pub struct Claims {
     pub sub: String,
     pub role: String,
     pub exp: usize
