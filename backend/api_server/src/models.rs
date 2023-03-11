@@ -14,13 +14,6 @@ pub struct InputUser {
 
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct LoginUser {
-    pub email: String, 
-    pub password: String
-}
-
-
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Claims {
     pub sub: String,
     pub role: String,

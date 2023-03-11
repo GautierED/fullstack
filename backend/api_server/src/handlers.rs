@@ -73,7 +73,7 @@ pub async fn delete_user(pool: web::Data<PgPool>, id: web::Path<i32>, auth: Bear
 }
 
 
-pub async fn login(pool: web::Data<PgPool>, form: web::Json<LoginUser>) -> impl Responder {
+pub async fn login(pool: web::Data<PgPool>, form: web::Json<InputUser>) -> impl Responder {
     let user = database::get_user_by_email_db(&pool, &form.email).await;
 
     match user {
